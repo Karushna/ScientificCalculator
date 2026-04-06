@@ -2,19 +2,20 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
-public class ScientificCalculator extends JFrame implements ActionListener {
+public class CalculatorUI extends JFrame implements ActionListener {
 
     JTextField textField;
-
     JButton[] numButtons = new JButton[10];
-    JButton add, sub, mul, div, eq, clr;
-    JButton sqrt, percent, power;
-    JButton sin, cos, log;
 
-    double num1, num2, result;
+    JButton add, sub, mul, div, eq, clr;
+    JButton sqrt, percent, power, sin, cos, log;
+
+    double num1, num2;
     char operator;
 
-    ScientificCalculator() {
+    CalculatorLogic logic = new CalculatorLogic();
+
+    CalculatorUI() {
         setTitle("Scientific Calculator");
         setSize(340, 550);
         setLayout(null);
@@ -25,13 +26,11 @@ public class ScientificCalculator extends JFrame implements ActionListener {
         textField.setFont(new Font("Arial", Font.BOLD, 20));
         add(textField);
 
-        // Numbers
         for (int i = 0; i < 10; i++) {
             numButtons[i] = new JButton(String.valueOf(i));
             numButtons[i].addActionListener(this);
         }
 
-        // Basic operators
         add = new JButton("+");
         sub = new JButton("-");
         mul = new JButton("*");
@@ -39,28 +38,21 @@ public class ScientificCalculator extends JFrame implements ActionListener {
         eq = new JButton("=");
         clr = new JButton("C");
 
-        // Scientific
         sqrt = new JButton("√");
         percent = new JButton("%");
         power = new JButton("x²");
-
         sin = new JButton("sin");
         cos = new JButton("cos");
         log = new JButton("log");
 
-        JButton[] allButtons = {
+        JButton[] all = {
             add, sub, mul, div, eq, clr,
-            sqrt, percent, power,
-            sin, cos, log
+            sqrt, percent, power, sin, cos, log
         };
 
-        for (JButton b : allButtons) {
-            b.addActionListener(this);
-        }
+        for (JButton b : all) b.addActionListener(this);
 
-        // Layout numbers
-        int x = 30, y = 80;
-        int count = 1;
+        int x = 30, y = 80, count = 1;
 
         for (int i = 1; i <= 9; i++) {
             numButtons[i].setBounds(x, y, 60, 50);
@@ -99,7 +91,6 @@ public class ScientificCalculator extends JFrame implements ActionListener {
         cos.setBounds(120, y, 80, 50);
         log.setBounds(210, y, 80, 50);
 
-        // Add buttons
         add(add); add(sub); add(mul); add(div);
         add(eq); add(clr);
         add(sqrt); add(percent); add(power);
@@ -110,14 +101,12 @@ public class ScientificCalculator extends JFrame implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
 
-        // Numbers
         for (int i = 0; i < 10; i++) {
             if (e.getSource() == numButtons[i]) {
                 textField.setText(textField.getText() + i);
             }
         }
 
-        // Basic operators
         if (e.getSource() == add) {
             num1 = Double.parseDouble(textField.getText());
             operator = '+';
@@ -142,69 +131,43 @@ public class ScientificCalculator extends JFrame implements ActionListener {
             textField.setText("");
         }
 
-        // Equals
         if (e.getSource() == eq) {
             num2 = Double.parseDouble(textField.getText());
 
+            double result = 0;
+
             switch (operator) {
-                case '+': result = num1 + num2; break;
-                case '-': result = num1 - num2; break;
-                case '*': result = num1 * num2; break;
-                case '/': result = num1 / num2; break;
+                case '+': result = logic.add(num1, num2); break;
+                case '-': result = logic.sub(num1, num2); break;
+                case '*': result = logic.mul(num1, num2); break;
+                case '/': result = logic.div(num1, num2); break;
             }
 
             textField.setText(String.valueOf(result));
         }
 
-        // Clear
-        if (e.getSource() == clr) {
-            textField.setText("");
-        }
+        if (e.getSource() == clr) textField.setText("");
 
-        // √
-        if (e.getSource() == sqrt) {
-            double value = Double.parseDouble(textField.getText());
-            result = Math.sqrt(value);
-            textField.setText(String.valueOf(result));
-        }
+        if (e.getSource() == sqrt)
+            textField.setText(String.valueOf(logic.sqrt(Double.parseDouble(textField.getText()))));
 
-        // %
-        if (e.getSource() == percent) {
-            double value = Double.parseDouble(textField.getText());
-            result = value / 100;
-            textField.setText(String.valueOf(result));
-        }
+        if (e.getSource() == percent)
+            textField.setText(String.valueOf(logic.percent(Double.parseDouble(textField.getText()))));
 
-        // x²
-        if (e.getSource() == power) {
-            double value = Double.parseDouble(textField.getText());
-            result = Math.pow(value, 2);
-            textField.setText(String.valueOf(result));
-        }
+        if (e.getSource() == power)
+            textField.setText(String.valueOf(logic.power(Double.parseDouble(textField.getText()))));
 
-        // sin
-        if (e.getSource() == sin) {
-            double value = Double.parseDouble(textField.getText());
-            result = Math.sin(Math.toRadians(value));
-            textField.setText(String.valueOf(result));
-        }
+        if (e.getSource() == sin)
+            textField.setText(String.valueOf(logic.sin(Double.parseDouble(textField.getText()))));
 
-        // cos
-        if (e.getSource() == cos) {
-            double value = Double.parseDouble(textField.getText());
-            result = Math.cos(Math.toRadians(value));
-            textField.setText(String.valueOf(result));
-        }
+        if (e.getSource() == cos)
+            textField.setText(String.valueOf(logic.cos(Double.parseDouble(textField.getText()))));
 
-        // log
-        if (e.getSource() == log) {
-            double value = Double.parseDouble(textField.getText());
-            result = Math.log10(value);
-            textField.setText(String.valueOf(result));
-        }
+        if (e.getSource() == log)
+            textField.setText(String.valueOf(logic.log(Double.parseDouble(textField.getText()))));
     }
 
     public static void main(String[] args) {
-        new ScientificCalculator();
+        new CalculatorUI();
     }
 }
