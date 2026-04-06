@@ -5,8 +5,9 @@ import javax.swing.*;
 public class CalculatorUI extends JFrame implements ActionListener {
 
     JTextField textField;
-    JButton[] numButtons = new JButton[10];
+    JTextArea historyArea;
 
+    JButton[] numButtons = new JButton[10];
     JButton add, sub, mul, div, eq, clr;
     JButton sqrt, percent, power, sin, cos, log;
     JButton openBracket, closeBracket;
@@ -15,13 +16,23 @@ public class CalculatorUI extends JFrame implements ActionListener {
 
     CalculatorUI() {
         setTitle("Scientific Calculator");
-        setSize(360, 600);
+        setSize(360, 650);
         setLayout(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        // Display
+        // 🧾 HISTORY AREA (TOP)
+        historyArea = new JTextArea();
+        historyArea.setBounds(20, 20, 300, 100);
+        historyArea.setEditable(false);
+        historyArea.setFont(new Font("Arial", Font.PLAIN, 14));
+
+        JScrollPane scrollPane = new JScrollPane(historyArea);
+        scrollPane.setBounds(20, 20, 300, 100);
+        add(scrollPane);
+
+        // 📟 DISPLAY
         textField = new JTextField();
-        textField.setBounds(20, 20, 300, 50);
+        textField.setBounds(20, 130, 300, 50);
         textField.setFont(new Font("Arial", Font.BOLD, 22));
         textField.setHorizontalAlignment(JTextField.RIGHT);
         add(textField);
@@ -32,7 +43,7 @@ public class CalculatorUI extends JFrame implements ActionListener {
             numButtons[i].addActionListener(this);
         }
 
-        // Operators
+        // Buttons
         add = new JButton("+");
         sub = new JButton("-");
         mul = new JButton("*");
@@ -44,7 +55,6 @@ public class CalculatorUI extends JFrame implements ActionListener {
         openBracket = new JButton("(");
         closeBracket = new JButton(")");
 
-        // Scientific
         sqrt = new JButton("√");
         percent = new JButton("%");
         power = new JButton("x²");
@@ -60,8 +70,8 @@ public class CalculatorUI extends JFrame implements ActionListener {
 
         for (JButton b : all) b.addActionListener(this);
 
-        // Layout numbers
-        int x = 20, y = 90, count = 1;
+        // Layout
+        int x = 20, y = 190, count = 1;
 
         for (int i = 1; i <= 9; i++) {
             numButtons[i].setBounds(x, y, 70, 50);
@@ -111,7 +121,7 @@ public class CalculatorUI extends JFrame implements ActionListener {
         setVisible(true);
     }
 
-    // Helper to append text + auto scroll
+    // Append helper
     private void append(String value) {
         textField.setText(textField.getText() + value);
         textField.setCaretPosition(textField.getText().length());
@@ -135,10 +145,15 @@ public class CalculatorUI extends JFrame implements ActionListener {
         if (e.getSource() == openBracket) append("(");
         if (e.getSource() == closeBracket) append(")");
 
-        // Equal → evaluate full expression
+        // Equals → evaluate + add to history
         if (e.getSource() == eq) {
             try {
-                double result = logic.evaluate(textField.getText());
+                String expression = textField.getText();
+                double result = logic.evaluate(expression);
+
+                // Add to history (NEW LINE ON TOP)
+                historyArea.setText(expression + " = " + result + "\n" + historyArea.getText());
+
                 textField.setText(String.valueOf(result));
             } catch (Exception ex) {
                 textField.setText("Error");
@@ -148,7 +163,7 @@ public class CalculatorUI extends JFrame implements ActionListener {
         // Clear
         if (e.getSource() == clr) textField.setText("");
 
-        // Scientific buttons (apply instantly)
+        // Scientific
         try {
             if (e.getSource() == sqrt)
                 textField.setText(String.valueOf(logic.sqrt(Double.parseDouble(textField.getText()))));
