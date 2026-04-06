@@ -9,35 +9,42 @@ public class CalculatorUI extends JFrame implements ActionListener {
 
     JButton add, sub, mul, div, eq, clr;
     JButton sqrt, percent, power, sin, cos, log;
-
-    double num1, num2;
-    char operator;
+    JButton openBracket, closeBracket;
 
     CalculatorLogic logic = new CalculatorLogic();
 
     CalculatorUI() {
         setTitle("Scientific Calculator");
-        setSize(340, 550);
+        setSize(360, 600);
         setLayout(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
+        // Display
         textField = new JTextField();
-        textField.setBounds(30, 20, 260, 40);
-        textField.setFont(new Font("Arial", Font.BOLD, 20));
+        textField.setBounds(20, 20, 300, 50);
+        textField.setFont(new Font("Arial", Font.BOLD, 22));
+        textField.setHorizontalAlignment(JTextField.RIGHT);
         add(textField);
 
+        // Numbers
         for (int i = 0; i < 10; i++) {
             numButtons[i] = new JButton(String.valueOf(i));
             numButtons[i].addActionListener(this);
         }
 
+        // Operators
         add = new JButton("+");
         sub = new JButton("-");
         mul = new JButton("*");
         div = new JButton("/");
+
         eq = new JButton("=");
         clr = new JButton("C");
 
+        openBracket = new JButton("(");
+        closeBracket = new JButton(")");
+
+        // Scientific
         sqrt = new JButton("√");
         percent = new JButton("%");
         power = new JButton("x²");
@@ -47,124 +54,123 @@ public class CalculatorUI extends JFrame implements ActionListener {
 
         JButton[] all = {
             add, sub, mul, div, eq, clr,
-            sqrt, percent, power, sin, cos, log
+            sqrt, percent, power, sin, cos, log,
+            openBracket, closeBracket
         };
 
         for (JButton b : all) b.addActionListener(this);
 
-        int x = 30, y = 80, count = 1;
+        // Layout numbers
+        int x = 20, y = 90, count = 1;
 
         for (int i = 1; i <= 9; i++) {
-            numButtons[i].setBounds(x, y, 60, 50);
+            numButtons[i].setBounds(x, y, 70, 50);
             add(numButtons[i]);
-            x += 70;
+            x += 80;
 
             if (count % 3 == 0) {
-                x = 30;
+                x = 20;
                 y += 60;
             }
             count++;
         }
 
-        numButtons[0].setBounds(30, y, 60, 50);
+        numButtons[0].setBounds(20, y, 70, 50);
         add(numButtons[0]);
 
-        add.setBounds(100, y, 60, 50);
-        sub.setBounds(170, y, 60, 50);
-        mul.setBounds(240, y, 60, 50);
+        add.setBounds(100, y, 70, 50);
+        sub.setBounds(180, y, 70, 50);
+        mul.setBounds(260, y, 60, 50);
 
         y += 60;
 
-        div.setBounds(30, y, 60, 50);
-        eq.setBounds(100, y, 130, 50);
-        clr.setBounds(240, y, 60, 50);
+        div.setBounds(20, y, 70, 50);
+        eq.setBounds(100, y, 150, 50);
+        clr.setBounds(260, y, 60, 50);
 
         y += 60;
 
-        sqrt.setBounds(30, y, 80, 50);
-        percent.setBounds(120, y, 80, 50);
-        power.setBounds(210, y, 80, 50);
+        openBracket.setBounds(20, y, 70, 50);
+        closeBracket.setBounds(100, y, 70, 50);
+        sqrt.setBounds(180, y, 70, 50);
+        percent.setBounds(260, y, 60, 50);
 
         y += 60;
 
-        sin.setBounds(30, y, 80, 50);
-        cos.setBounds(120, y, 80, 50);
-        log.setBounds(210, y, 80, 50);
+        power.setBounds(20, y, 70, 50);
+        sin.setBounds(100, y, 70, 50);
+        cos.setBounds(180, y, 70, 50);
+        log.setBounds(260, y, 60, 50);
 
         add(add); add(sub); add(mul); add(div);
         add(eq); add(clr);
+        add(openBracket); add(closeBracket);
         add(sqrt); add(percent); add(power);
         add(sin); add(cos); add(log);
 
         setVisible(true);
     }
 
+    // Helper to append text + auto scroll
+    private void append(String value) {
+        textField.setText(textField.getText() + value);
+        textField.setCaretPosition(textField.getText().length());
+    }
+
     public void actionPerformed(ActionEvent e) {
 
+        // Numbers
         for (int i = 0; i < 10; i++) {
             if (e.getSource() == numButtons[i]) {
-                textField.setText(textField.getText() + i);
+                append(String.valueOf(i));
             }
         }
 
-        if (e.getSource() == add) {
-            num1 = Double.parseDouble(textField.getText());
-            operator = '+';
-            textField.setText("");
-        }
+        // Operators
+        if (e.getSource() == add) append("+");
+        if (e.getSource() == sub) append("-");
+        if (e.getSource() == mul) append("*");
+        if (e.getSource() == div) append("/");
 
-        if (e.getSource() == sub) {
-            num1 = Double.parseDouble(textField.getText());
-            operator = '-';
-            textField.setText("");
-        }
+        if (e.getSource() == openBracket) append("(");
+        if (e.getSource() == closeBracket) append(")");
 
-        if (e.getSource() == mul) {
-            num1 = Double.parseDouble(textField.getText());
-            operator = '*';
-            textField.setText("");
-        }
-
-        if (e.getSource() == div) {
-            num1 = Double.parseDouble(textField.getText());
-            operator = '/';
-            textField.setText("");
-        }
-
+        // Equal → evaluate full expression
         if (e.getSource() == eq) {
-            num2 = Double.parseDouble(textField.getText());
-
-            double result = 0;
-
-            switch (operator) {
-                case '+': result = logic.add(num1, num2); break;
-                case '-': result = logic.sub(num1, num2); break;
-                case '*': result = logic.mul(num1, num2); break;
-                case '/': result = logic.div(num1, num2); break;
+            try {
+                double result = logic.evaluate(textField.getText());
+                textField.setText(String.valueOf(result));
+            } catch (Exception ex) {
+                textField.setText("Error");
             }
-
-            textField.setText(String.valueOf(result));
         }
 
+        // Clear
         if (e.getSource() == clr) textField.setText("");
 
-        if (e.getSource() == sqrt)
-            textField.setText(String.valueOf(logic.sqrt(Double.parseDouble(textField.getText()))));
+        // Scientific buttons (apply instantly)
+        try {
+            if (e.getSource() == sqrt)
+                textField.setText(String.valueOf(logic.sqrt(Double.parseDouble(textField.getText()))));
 
-        if (e.getSource() == percent)
-            textField.setText(String.valueOf(logic.percent(Double.parseDouble(textField.getText()))));
+            if (e.getSource() == percent)
+                textField.setText(String.valueOf(logic.percent(Double.parseDouble(textField.getText()))));
 
-        if (e.getSource() == power)
-            textField.setText(String.valueOf(logic.power(Double.parseDouble(textField.getText()))));
+            if (e.getSource() == power)
+                textField.setText(String.valueOf(logic.power(Double.parseDouble(textField.getText()))));
 
-        if (e.getSource() == sin)
-            textField.setText(String.valueOf(logic.sin(Double.parseDouble(textField.getText()))));
+            if (e.getSource() == sin)
+                textField.setText(String.valueOf(logic.sin(Double.parseDouble(textField.getText()))));
 
-        if (e.getSource() == cos)
-            textField.setText(String.valueOf(logic.cos(Double.parseDouble(textField.getText()))));
+            if (e.getSource() == cos)
+                textField.setText(String.valueOf(logic.cos(Double.parseDouble(textField.getText()))));
 
-        if (e.getSource() == log)
-            textField.setText(String.valueOf(logic.log(Double.parseDouble(textField.getText()))));
+            if (e.getSource() == log)
+                textField.setText(String.valueOf(logic.log(Double.parseDouble(textField.getText()))));
+
+        } catch (Exception ex) {
+            textField.setText("Error");
+        }
     }
 
     public static void main(String[] args) {
