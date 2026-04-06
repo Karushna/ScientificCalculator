@@ -14,13 +14,14 @@ public class CalculatorUI extends JFrame implements ActionListener {
 
     CalculatorLogic logic = new CalculatorLogic();
 
-    CalculatorUI() {
+    public CalculatorUI() {
+
         setTitle("Scientific Calculator");
         setSize(360, 680);
         setLayout(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        // 🧾 HISTORY AREA
+        // 🧾 HISTORY
         historyArea = new JTextArea();
         historyArea.setEditable(false);
         historyArea.setFont(new Font("Arial", Font.PLAIN, 14));
@@ -29,20 +30,50 @@ public class CalculatorUI extends JFrame implements ActionListener {
         scrollPane.setBounds(20, 20, 300, 100);
         add(scrollPane);
 
-        // 🧹 CLEAR HISTORY BUTTON
+        // 🧹 CLEAR HISTORY
         clearHistoryBtn = new JButton("Clear History");
         clearHistoryBtn.setBounds(20, 125, 300, 30);
         clearHistoryBtn.addActionListener(this);
         add(clearHistoryBtn);
 
-        // 📟 DISPLAY
+        // 📟 DISPLAY (NOW EDITABLE ✅)
         textField = new JTextField();
         textField.setBounds(20, 160, 300, 50);
         textField.setFont(new Font("Arial", Font.BOLD, 22));
         textField.setHorizontalAlignment(JTextField.RIGHT);
+        textField.setEditable(true);
         add(textField);
 
-        // 🖱️ CLICK HISTORY TO REUSE
+        // ⌨️ KEYBOARD SUPPORT (REAL TYPING)
+        textField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+
+                // ENTER → calculate
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    evaluate();
+                    e.consume();
+                }
+
+                // ESC → clear
+                else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    textField.setText("");
+                }
+
+                // Allow only valid characters
+                char c = e.getKeyChar();
+
+                if (Character.isDigit(c) ||
+                        "+-*/().".indexOf(c) >= 0 ||
+                        e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
+                    // allow typing
+                } else {
+                    e.consume(); // block invalid keys
+                }
+            }
+        });
+
+        // 🖱️ CLICK HISTORY → REUSE RESULT
         historyArea.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 try {
@@ -62,13 +93,13 @@ public class CalculatorUI extends JFrame implements ActionListener {
             }
         });
 
-        // Numbers
+        // 🔢 NUMBERS
         for (int i = 0; i < 10; i++) {
             numButtons[i] = new JButton(String.valueOf(i));
             numButtons[i].addActionListener(this);
         }
 
-        // Buttons
+        // ➕ OPERATORS
         add = new JButton("+");
         sub = new JButton("-");
         mul = new JButton("*");
@@ -80,6 +111,7 @@ public class CalculatorUI extends JFrame implements ActionListener {
         openBracket = new JButton("(");
         closeBracket = new JButton(")");
 
+        // 🧠 SCIENTIFIC
         sqrt = new JButton("√");
         percent = new JButton("%");
         power = new JButton("x²");
@@ -88,14 +120,14 @@ public class CalculatorUI extends JFrame implements ActionListener {
         log = new JButton("log");
 
         JButton[] all = {
-            add, sub, mul, div, eq, clr,
-            sqrt, percent, power, sin, cos, log,
-            openBracket, closeBracket
+                add, sub, mul, div, eq, clr,
+                sqrt, percent, power, sin, cos, log,
+                openBracket, closeBracket
         };
 
         for (JButton b : all) b.addActionListener(this);
 
-        // Layout
+        // 📐 LAYOUT
         int x = 20, y = 220, count = 1;
 
         for (int i = 1; i <= 9; i++) {
@@ -146,52 +178,41 @@ public class CalculatorUI extends JFrame implements ActionListener {
         setVisible(true);
     }
 
-    private void append(String value) {
-        textField.setText(textField.getText() + value);
-        textField.setCaretPosition(textField.getText().length());
+    // Evaluate expression
+    private void evaluate() {
+        try {
+            String expression = textField.getText();
+            double result = logic.evaluate(expression);
+
+            historyArea.setText(expression + " = " + result + "\n" + historyArea.getText());
+            textField.setText(String.valueOf(result));
+
+        } catch (Exception ex) {
+            textField.setText("Error");
+        }
     }
 
     public void actionPerformed(ActionEvent e) {
 
-        // Numbers
         for (int i = 0; i < 10; i++) {
-            if (e.getSource() == numButtons[i]) {
-                append(String.valueOf(i));
-            }
+            if (e.getSource() == numButtons[i])
+                textField.setText(textField.getText() + i);
         }
 
-        // Operators
-        if (e.getSource() == add) append("+");
-        if (e.getSource() == sub) append("-");
-        if (e.getSource() == mul) append("*");
-        if (e.getSource() == div) append("/");
+        if (e.getSource() == add) textField.setText(textField.getText() + "+");
+        if (e.getSource() == sub) textField.setText(textField.getText() + "-");
+        if (e.getSource() == mul) textField.setText(textField.getText() + "*");
+        if (e.getSource() == div) textField.setText(textField.getText() + "/");
 
-        if (e.getSource() == openBracket) append("(");
-        if (e.getSource() == closeBracket) append(")");
+        if (e.getSource() == openBracket) textField.setText(textField.getText() + "(");
+        if (e.getSource() == closeBracket) textField.setText(textField.getText() + ")");
 
-        // Equals
-        if (e.getSource() == eq) {
-            try {
-                String expression = textField.getText();
-                double result = logic.evaluate(expression);
+        if (e.getSource() == eq) evaluate();
 
-                historyArea.setText(expression + " = " + result + "\n" + historyArea.getText());
-                textField.setText(String.valueOf(result));
-
-            } catch (Exception ex) {
-                textField.setText("Error");
-            }
-        }
-
-        // Clear input
         if (e.getSource() == clr) textField.setText("");
 
-        // 🧹 Clear history
-        if (e.getSource() == clearHistoryBtn) {
-            historyArea.setText("");
-        }
+        if (e.getSource() == clearHistoryBtn) historyArea.setText("");
 
-        // Scientific
         try {
             if (e.getSource() == sqrt)
                 textField.setText(String.valueOf(logic.sqrt(Double.parseDouble(textField.getText()))));
