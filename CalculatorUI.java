@@ -8,7 +8,7 @@ public class CalculatorUI extends JFrame implements ActionListener {
     JTextArea historyArea;
 
     JButton[] numButtons = new JButton[10];
-    JButton add, sub, mul, div, eq, clr;
+    JButton add, sub, mul, div, eq, clr, clearHistoryBtn;
     JButton sqrt, percent, power, sin, cos, log;
     JButton openBracket, closeBracket;
 
@@ -16,13 +16,12 @@ public class CalculatorUI extends JFrame implements ActionListener {
 
     CalculatorUI() {
         setTitle("Scientific Calculator");
-        setSize(360, 650);
+        setSize(360, 680);
         setLayout(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        // 🧾 HISTORY AREA (TOP)
+        // 🧾 HISTORY AREA
         historyArea = new JTextArea();
-        historyArea.setBounds(20, 20, 300, 100);
         historyArea.setEditable(false);
         historyArea.setFont(new Font("Arial", Font.PLAIN, 14));
 
@@ -30,12 +29,38 @@ public class CalculatorUI extends JFrame implements ActionListener {
         scrollPane.setBounds(20, 20, 300, 100);
         add(scrollPane);
 
+        // 🧹 CLEAR HISTORY BUTTON
+        clearHistoryBtn = new JButton("Clear History");
+        clearHistoryBtn.setBounds(20, 125, 300, 30);
+        clearHistoryBtn.addActionListener(this);
+        add(clearHistoryBtn);
+
         // 📟 DISPLAY
         textField = new JTextField();
-        textField.setBounds(20, 130, 300, 50);
+        textField.setBounds(20, 160, 300, 50);
         textField.setFont(new Font("Arial", Font.BOLD, 22));
         textField.setHorizontalAlignment(JTextField.RIGHT);
         add(textField);
+
+        // 🖱️ CLICK HISTORY TO REUSE
+        historyArea.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                try {
+                    int offset = historyArea.viewToModel2D(e.getPoint());
+                    int rowStart = javax.swing.text.Utilities.getRowStart(historyArea, offset);
+                    int rowEnd = javax.swing.text.Utilities.getRowEnd(historyArea, offset);
+
+                    String line = historyArea.getText().substring(rowStart, rowEnd).trim();
+
+                    if (line.contains("=")) {
+                        String result = line.split("=")[1].trim();
+                        textField.setText(result);
+                    }
+                } catch (Exception ex) {
+                    // ignore
+                }
+            }
+        });
 
         // Numbers
         for (int i = 0; i < 10; i++) {
@@ -71,7 +96,7 @@ public class CalculatorUI extends JFrame implements ActionListener {
         for (JButton b : all) b.addActionListener(this);
 
         // Layout
-        int x = 20, y = 190, count = 1;
+        int x = 20, y = 220, count = 1;
 
         for (int i = 1; i <= 9; i++) {
             numButtons[i].setBounds(x, y, 70, 50);
@@ -121,7 +146,6 @@ public class CalculatorUI extends JFrame implements ActionListener {
         setVisible(true);
     }
 
-    // Append helper
     private void append(String value) {
         textField.setText(textField.getText() + value);
         textField.setCaretPosition(textField.getText().length());
@@ -145,23 +169,27 @@ public class CalculatorUI extends JFrame implements ActionListener {
         if (e.getSource() == openBracket) append("(");
         if (e.getSource() == closeBracket) append(")");
 
-        // Equals → evaluate + add to history
+        // Equals
         if (e.getSource() == eq) {
             try {
                 String expression = textField.getText();
                 double result = logic.evaluate(expression);
 
-                // Add to history (NEW LINE ON TOP)
                 historyArea.setText(expression + " = " + result + "\n" + historyArea.getText());
-
                 textField.setText(String.valueOf(result));
+
             } catch (Exception ex) {
                 textField.setText("Error");
             }
         }
 
-        // Clear
+        // Clear input
         if (e.getSource() == clr) textField.setText("");
+
+        // 🧹 Clear history
+        if (e.getSource() == clearHistoryBtn) {
+            historyArea.setText("");
+        }
 
         // Scientific
         try {
